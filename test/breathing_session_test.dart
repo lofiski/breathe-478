@@ -50,8 +50,8 @@ void main() {
     });
 
     test('wraps correctly deep into later cycles', () {
-      // 19 * 5 = 95, + 4 (inhale) + 7 (hold) = 106 -> exhale, 2s in.
-      final s = session.stateAt(106);
+      // 19 * 5 = 95, + 4 (inhale) + 7 (hold) + 2 = 108 -> exhale, 2s in.
+      final s = session.stateAt(108);
       expect(s.phase, BreathPhase.exhale);
       expect(s.secondsIntoPhase, 2);
     });
