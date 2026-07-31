@@ -59,16 +59,18 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() => _starting = true);
     StartResult result;
     try {
-      result = await _controller.start(
-        totalDuration: _selectedMinutes == null
-            ? null
-            : Duration(minutes: _selectedMinutes!),
-        soundEnabled: _soundEnabled,
-      );
+      result = await _controller
+          .start(
+            totalDuration: _selectedMinutes == null
+                ? null
+                : Duration(minutes: _selectedMinutes!),
+            soundEnabled: _soundEnabled,
+          )
+          .timeout(const Duration(seconds: 8));
     } catch (error) {
-      // A failed platform call (e.g. the OS rejecting the foreground
-      // service) must never fail silently — show it instead of leaving the
-      // button looking unresponsive.
+      // A failed or hung platform call (e.g. the OS rejecting the
+      // foreground service) must never fail silently — show it instead of
+      // leaving the button looking unresponsive.
       setState(() => _starting = false);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -156,7 +158,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: FilledButton.styleFrom(
                       shape: const StadiumBorder(),
                     ),
-                    child: Text(isRunning ? '结束' : '开始'),
+                    // Always change something visible the instant the user
+                    // taps, so "did my tap even register" is never in doubt.
+                    child: _starting
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(strokeWidth: 2.4),
+                          )
+                        : Text(isRunning ? '结束' : '开始'),
                   ),
                 ),
                 const SizedBox(height: 24),
