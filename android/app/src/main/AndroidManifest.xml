@@ -1,7 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Keeps the breathing timer + cue sounds running once the screen locks. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <!-- dataSync (not mediaPlayback): we only fire short cue sounds, we don't
+         run a continuous system-recognized media session, and Android 14+
+         gates mediaPlayback FGS starts on having one — using it here caused
+         startService() to throw and silently do nothing on tap. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <!-- Android 13+ requires runtime consent to show the ongoing session notification. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -34,7 +38,7 @@
         <!-- flutter_foreground_task background service -->
         <service
             android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
-            android:foregroundServiceType="mediaPlayback"
+            android:foregroundServiceType="dataSync"
             android:exported="false" />
     </application>
 </manifest>

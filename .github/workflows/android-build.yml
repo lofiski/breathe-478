@@ -40,23 +40,33 @@ jobs:
         working-directory: android
         run: gradle wrapper --gradle-version 8.10
 
-      - name: Build release APK
-        run: flutter build apk --release
+      # A single "universal" release APK bundles native libs for every CPU
+      # architecture (~47MB for this app). Splitting per ABI means the file
+      # a real phone downloads only contains the code it can actually run.
+      - name: Build release APKs (split per ABI)
+        run: flutter build apk --release --split-per-abi
 
       # Actions "artifacts" always come back as a zip, need a signed-in
       # session, and get buried inside a specific run. A GitHub Release asset
       # is a direct, un-zipped file download and shows up on the repo's
       # Releases list. We overwrite one rolling "latest" release every build
       # instead of piling up a release per commit.
-      - name: Publish latest release with the raw APK
+      - name: Publish latest release with the raw APKs
         if: github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cp build/app/outputs/flutter-apk/app-release.apk breathe478.apk
+          cd build/app/outputs/flutter-apk
+          cp app-arm64-v8a-release.apk breathe478-arm64.apk       # nearly all phones since ~2019
+          cp app-armeabi-v7a-release.apk breathe478-arm32.apk     # older/budget devices
+          cp app-x86_64-release.apk breathe478-x86_64.apk         # emulators, rare x86 devices
+          cd -
           gh release delete latest --cleanup-tag --yes || true
-          gh release create latest breathe478.apk \
+          gh release create latest \
+            build/app/outputs/flutter-apk/breathe478-arm64.apk \
+            build/app/outputs/flutter-apk/breathe478-arm32.apk \
+            build/app/outputs/flutter-apk/breathe478-x86_64.apk \
             --repo "${{ github.repository }}" \
             --title "478 呼吸 · 最新构建" \
-            --notes "自动构建自 commit ${{ github.sha }}，可直接下载安装（未签名/debug 签名，仅供自测）。" \
+            --notes "自动构建自 commit ${{ github.sha }}。大多数手机（2019 年后）下载 **breathe478-arm64.apk** 即可；老设备用 breathe478-arm32.apk。未签名/debug 签名，仅供自测。" \
             --latest

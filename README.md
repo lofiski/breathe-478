@@ -16,7 +16,7 @@
 | 权限 | 用途 |
 | --- | --- |
 | `POST_NOTIFICATIONS`（运行时权限，仅 Android 13+ 弹窗询问） | 前台服务要求常驻一条通知，用来告知系统"计时仍在进行"。 |
-| `FOREGROUND_SERVICE` / `FOREGROUND_SERVICE_MEDIA_PLAYBACK` / `WAKE_LOCK`（普通权限，系统自动授予，不会弹窗） | 让计时与提示音播放在息屏后继续运行。 |
+| `FOREGROUND_SERVICE` / `FOREGROUND_SERVICE_DATA_SYNC` / `WAKE_LOCK`（普通权限，系统自动授予，不会弹窗） | 让计时与提示音播放在息屏后继续运行。 |
 
 不申请相机、麦克风、定位、通讯录、存储等任何与功能无关的权限。
 
@@ -33,11 +33,17 @@
 
 1. `flutter analyze` + `flutter test`（跑 `test/breathing_session_test.dart`）。
 2. 用 CI runner 自带的 `gradle wrapper --gradle-version 8.10` **现场生成** Gradle Wrapper（包括二进制的 `gradle-wrapper.jar`），因此仓库里不需要提交这个二进制文件。
-3. `flutter build apk --release`，把裸 APK 发布到一个滚动更新的 GitHub Release（tag 固定为 `latest`）。
+3. `flutter build apk --release --split-per-abi`，按 CPU 架构拆分成三个包（避免一个"万能包"把三份架构的原生库都塞进去，体积翻三倍），发布到一个滚动更新的 GitHub Release（tag 固定为 `latest`）。
 
 ### 如何拿到安装包
 
-直接打开 **[Releases 页面](../../releases/latest)**（仓库首页右侧栏也有入口），下载 `breathe478.apk` 这个文件——它是未压缩的裸 APK，不是 Actions Artifact 那种登录后才能下载、还带 zip 壳的东西。传到手机后在"设置里允许安装未知来源应用"，点击文件即可安装。
+直接打开 **[Releases 页面](../../releases/latest)**（仓库首页右侧栏也有入口），下载文件：
+
+- **`breathe478-arm64.apk`** —— 2019 年之后的手机基本都是这个，不确定就选它。
+- `breathe478-arm32.apk` —— 比较老的安卓机型。
+- `breathe478-x86_64.apk` —— 仅供模拟器等 x86 设备使用。
+
+这些都是未压缩的裸 APK，不是 Actions Artifact 那种登录后才能下载、还带 zip 壳的东西。传到手机后在"设置里允许安装未知来源应用"，点击文件即可安装。
 
 每次成功构建都会覆盖同一个 `latest` release，所以这个链接长期有效，不用每次都去找最新的一次运行。
 

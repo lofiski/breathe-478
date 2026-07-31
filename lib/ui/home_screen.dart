@@ -57,11 +57,25 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     setState(() => _starting = true);
-    final result = await _controller.start(
-      totalDuration:
-          _selectedMinutes == null ? null : Duration(minutes: _selectedMinutes!),
-      soundEnabled: _soundEnabled,
-    );
+    StartResult result;
+    try {
+      result = await _controller.start(
+        totalDuration: _selectedMinutes == null
+            ? null
+            : Duration(minutes: _selectedMinutes!),
+        soundEnabled: _soundEnabled,
+      );
+    } catch (error) {
+      // A failed platform call (e.g. the OS rejecting the foreground
+      // service) must never fail silently — show it instead of leaving the
+      // button looking unresponsive.
+      setState(() => _starting = false);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('启动失败：$error')),
+      );
+      return;
+    }
     setState(() => _starting = false);
 
     if (result == StartResult.notificationPermissionDenied) {
