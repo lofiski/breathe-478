@@ -33,11 +33,13 @@
 
 1. `flutter analyze` + `flutter test`（跑 `test/breathing_session_test.dart`）。
 2. 用 CI runner 自带的 `gradle wrapper --gradle-version 8.10` **现场生成** Gradle Wrapper（包括二进制的 `gradle-wrapper.jar`），因此仓库里不需要提交这个二进制文件。
-3. `flutter build apk --release`，产物上传为 Actions Artifact：`breathe478-release-apk`。
+3. `flutter build apk --release`，把裸 APK 发布到一个滚动更新的 GitHub Release（tag 固定为 `latest`）。
 
 ### 如何拿到安装包
 
-打开仓库的 **Actions** 页面 → 选最近一次绿色的 `Android Build` 运行 → 在 **Artifacts** 里下载 `breathe478-release-apk` → 传到手机后在"设置里允许安装未知来源应用"后点击安装即可。
+直接打开 **[Releases 页面](../../releases/latest)**（仓库首页右侧栏也有入口），下载 `breathe478.apk` 这个文件——它是未压缩的裸 APK，不是 Actions Artifact 那种登录后才能下载、还带 zip 壳的东西。传到手机后在"设置里允许安装未知来源应用"，点击文件即可安装。
+
+每次成功构建都会覆盖同一个 `latest` release，所以这个链接长期有效，不用每次都去找最新的一次运行。
 
 当前 release 包用的是 Flutter 默认的 debug 签名（`flutter build apk --release` 的默认行为），仅适合直接安装到自己手机测试，**不能**直接上架 Google Play——上架前需要生成正式 keystore，作为 GitHub Secret 注入构建。
 
