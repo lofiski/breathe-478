@@ -1,0 +1,25 @@
+# Flutter/Dart
+.dart_tool/
+.packages
+build/
+*.iml
+.idea/
+.vscode/
+
+# Android
+android/local.properties
+android/.gradle/
+android/gradle/
+android/gradlew
+android/gradlew.bat
+android/**/gradle-wrapper.properties
+android/**/*.iml
+android/captures/
+android/gradle-wrapper.jar
+
+# iOS (not yet scaffolded, reserved for future flutter create --platforms=ios)
+ios/
+
+# Misc
+*.log
+.DS_Store
