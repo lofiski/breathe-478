@@ -43,6 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onControllerChanged() {
+    if (!mounted) return;
     setState(() {});
     if (!_controller.isRunning) {
       WakelockPlus.disable();
@@ -57,20 +58,15 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     setState(() => _starting = true);
-    StartResult result;
+    StartOutcome outcome;
     try {
-      result = await _controller
-          .start(
-            totalDuration: _selectedMinutes == null
-                ? null
-                : Duration(minutes: _selectedMinutes!),
-            soundEnabled: _soundEnabled,
-          )
-          .timeout(const Duration(seconds: 8));
+      outcome = await _controller.start(
+        totalDuration: _selectedMinutes == null
+            ? null
+            : Duration(minutes: _selectedMinutes!),
+        soundEnabled: _soundEnabled,
+      );
     } catch (error) {
-      // A failed or hung platform call (e.g. the OS rejecting the
-      // foreground service) must never fail silently — show it instead of
-      // leaving the button looking unresponsive.
       setState(() => _starting = false);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -80,14 +76,15 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     setState(() => _starting = false);
 
-    if (result == StartResult.notificationPermissionDenied) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('需要通知权限才能在后台保持计时和提示音，请在系统设置中允许通知。'),
-        ),
-      );
-      return;
+    // The session is already running either way; only warn that a locked
+    // screen might interrupt it.
+    if (outcome == StartOutcome.runningWithoutBackground && mounted) {
+      final warning = _controller.backgroundWarning;
+      if (warning != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(warning), duration: const Duration(seconds: 6)),
+        );
+      }
     }
 
     if (_keepScreenOn) {
